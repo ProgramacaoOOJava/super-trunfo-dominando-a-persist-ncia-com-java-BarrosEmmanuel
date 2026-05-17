@@ -7,12 +7,6 @@ import java.util.Scanner;
 /**
  * Sistema Super Trunfo usando JDBC puro
  * Nível 1 - Novato: Desafio de Código - "Cartas Clássicas - JDBC Puro"
- * 
- * Funcionalidades:
- * - Gerenciamento de cartas (alunos) com CRUD completo
- * - Sistema de batalhas entre cartas
- * - Interface de console interativa
- * - Persistência com Apache Derby
  */
 public class SuperTrunfoJDBC {
     
@@ -23,6 +17,50 @@ public class SuperTrunfoJDBC {
     
     private static Scanner scanner = new Scanner(System.in);
     private static Random random = new Random();
+    
+    public static void main(String[] args) {
+        criarTabela();
+        int opcao = -1;
+
+        while (opcao != 0) {
+            System.out.println("\n--- MENU SUPER TRUNFO ---");
+            System.out.println("1. Cadastrar Carta (Aluno)");
+            System.out.println("2. Listar Todas as Cartas");
+            System.out.println("3. Excluir uma Carta");
+            System.out.println("4. Inserir 5 Cartas de Exemplo");
+            System.out.println("5. Iniciar Batalha");
+            System.out.println("0. Sair");
+            System.out.print("Escolha uma opção: ");
+            
+            opcao = scanner.nextInt();
+            scanner.nextLine(); // Limpa buffer
+
+            if (opcao == 1) {
+                System.out.print("Matrícula: ");
+                String mat = scanner.nextLine();
+                System.out.print("Nome: ");
+                String nome = scanner.nextLine();
+                System.out.print("Ano de Entrada: ");
+                int ent = scanner.nextInt();
+                inserirAluno(new Aluno(mat, nome, ent));
+            } 
+            else if (opcao == 2) {
+                exibirTodasCartas();
+            } 
+            else if (opcao == 3) {
+                System.out.print("Digite a matrícula para excluir: ");
+                String mat = scanner.nextLine();
+                excluirAluno(mat);
+            } 
+            else if (opcao == 4) {
+                inserirDadosExemplo();
+            } 
+            else if (opcao == 5) {
+                batalharCartas();
+            }
+        }
+        System.out.println("Sistema encerrado com humildade. Até a próxima!");
+    }
     
     /**
      * Obtém uma conexão com o banco de dados Derby
@@ -35,16 +73,20 @@ public class SuperTrunfoJDBC {
      * Cria a tabela aluno se ela não existir
      */
     public static void criarTabela() {
-        String sql = .
+        String sql = "CREATE TABLE aluno (matricula VARCHAR(20) PRIMARY KEY, nome VARCHAR(100), entrada INT)";
         
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             
-            .
+            stmt.executeUpdate(sql);
+            System.out.println("⚙️ Banco de dados inicializado.");
             
         } catch (SQLException e) {
-            // Se a tabela já existir, apenas informa
-            if (e.getSQLState().equals("X0Y32")) .
+            if (e.getSQLState().equals("X0Y32")) {
+                // Tabela já existe, apenas prossegue silenciosamente
+            } else {
+                System.err.println("❌ Erro ao criar tabela: " + e.getMessage());
+            }
         }
     }
     
@@ -58,19 +100,19 @@ public class SuperTrunfoJDBC {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, aluno.getMatricula());
-            .
+            ps.setString(2, aluno.getNome());
+            ps.setInt(3, aluno.getEntrada());
             
             int linhasAfetadas = ps.executeUpdate();
             
             if (linhasAfetadas > 0) {
-                System.out.println("✅ Carta inserida: " + aluno.getNome());
+                System.out.println("✅ Carta inserida com sucesso!");
                 return true;
             }
             
         } catch (SQLException e) {
-            System.err.println("❌ Erro ao inserir aluno: " + e.getMessage());
+            System.err.println("❌ Erro ao inserir: " + e.getMessage());
         }
-        
         return false;
     }
     
@@ -82,19 +124,20 @@ public class SuperTrunfoJDBC {
         String sql = "SELECT * FROM aluno ORDER BY nome";
         
         try (Connection conn = getConnection();
-             . {
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
             
             while (rs.next()) {
                 Aluno aluno = new Aluno();
-                .
-                
+                aluno.setMatricula(rs.getString("matricula"));
+                aluno.setNome(rs.getString("nome"));
+                aluno.setEntrada(rs.getInt("entrada"));
                 alunos.add(aluno);
             }
             
         } catch (SQLException e) {
-            System.err.println("❌ Erro ao consultar alunos: " + e.getMessage());
+            System.err.println("❌ Erro ao consultar: " + e.getMessage());
         }
-        
         return alunos;
     }
     
@@ -108,17 +151,18 @@ public class SuperTrunfoJDBC {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, matricula);
-            .
+            int linhasAfetadas = ps.executeUpdate();
             
             if (linhasAfetadas > 0) {
-                .
+                System.out.println("✅ Carta excluída com sucesso.");
+                return true;
             } else {
-                System.out.println("⚠️  Nenhuma carta encontrada com essa matrícula.");
+                System.out.println("⚠️ Nenhuma carta encontrada com essa matrícula.");
                 return false;
             }
             
         } catch (SQLException e) {
-            System.err.println("❌ Erro ao excluir aluno: " + e.getMessage());
+            System.err.println("❌ Erro ao excluir: " + e.getMessage());
             return false;
         }
     }
@@ -133,17 +177,19 @@ public class SuperTrunfoJDBC {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, matricula);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                Aluno aluno = new Aluno();
-                .
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Aluno aluno = new Aluno();
+                    aluno.setMatricula(rs.getString("matricula"));
+                    aluno.setNome(rs.getString("nome"));
+                    aluno.setEntrada(rs.getInt("entrada"));
+                    return aluno;
+                }
             }
             
         } catch (SQLException e) {
-            System.err.println("❌ Erro ao buscar aluno: " + e.getMessage());
+            System.err.println("❌ Erro ao buscar: " + e.getMessage());
         }
-        
         return null;
     }
     
@@ -154,13 +200,11 @@ public class SuperTrunfoJDBC {
         List<Aluno> alunos = consultarTodosAlunos();
         
         if (alunos.isEmpty()) {
-            System.out.println("📭 Nenhuma carta encontrada no baralho.");
+            System.out.println("📭 Baralho vazio.");
             return;
         }
         
-        System.out.println("\n🃏 === BARALHO SUPER TRUNFO ===");
-        System.out.printf("Total de cartas: %d%n%n", alunos.size());
-        
+        System.out.println("\n=== SEU BARALHO ===");
         for (Aluno aluno : alunos) {
             aluno.exibirCarta();
             System.out.println();
@@ -168,148 +212,58 @@ public class SuperTrunfoJDBC {
     }
     
     /**
-     * Insere dados de exemplo no sistema
+     * Insere dados de exemplo no sistema (Mínimo de 5 cartas requerido)
      */
     public static void inserirDadosExemplo() {
-        System.out.println("\n🎲 Inserindo cartas de exemplo...");
-        
         Aluno[] exemplos = {
             new Aluno("A2020001", "Ana Silva", 2020),
-            .
+            new Aluno("B2021002", "Bruno Dias", 2021),
+            new Aluno("M2018003", "Carlos Lima", 2018),
+            new Aluno("N2024004", "Nadia Souza", 2024),
+            new Aluno("R2025005", "Rafael Cruz", 2025)
         };
         
         int inseridos = 0;
         for (Aluno aluno : exemplos) {
-            if (inserirAluno(aluno)) {
-                inseridos++;
+            if (buscarAluno(aluno.getMatricula()) == null) {
+                if (inserirAluno(aluno)) {
+                    inseridos++;
+                }
             }
         }
-        
-        System.out.printf("✅ %d cartas inseridas com sucesso!%n", inseridos);
+        System.out.println("🎲 " + inseridos + " novas cartas de exemplo adicionadas.");
     }
     
     /**
-     * Implementa a lógica de batalha entre duas cartas
+     * Implementa a lógica de batalha simples entre duas cartas
      */
     public static void batalharCartas() {
         List<Aluno> alunos = consultarTodosAlunos();
         
         if (alunos.size() < 2) {
-            System.out.println("⚠️  É necessário ter pelo menos 2 cartas para batalhar!");
+            System.out.println("⚠️ Cadastre pelo menos 2 cartas para poder batalhar!");
             return;
         }
         
-        System.out.println("\n⚔️  === BATALHA SUPER TRUNFO ===");
-        
-        // Sorteia duas cartas aleatórias
         Aluno carta1 = alunos.get(random.nextInt(alunos.size()));
         Aluno carta2;
         do {
             carta2 = alunos.get(random.nextInt(alunos.size()));
         } while (carta1.getMatricula().equals(carta2.getMatricula()));
         
-        .
+        System.out.println("\n--- JOGADOR 1 ---");
+        carta1.exibirCarta();
+        System.out.println("\n       VS        \n");
+        System.out.println("--- JOGADOR 2 ---");
+        carta2.exibirCarta();
         
+        System.out.println("\nResultado da Batalha (Maior ano vence):");
         if (carta1.batalhar(carta2)) {
-            .
+            System.out.println("🏆 VENCEDOR: Jogador 1 (" + carta1.getNome() + ")");
         } else if (carta2.batalhar(carta1)) {
-            .
+            System.out.println("🏆 VENCEDOR: Jogador 2 (" + carta2.getNome() + ")");
         } else {
-            .
+            System.out.println("🤝 EMPATE! Ambos entraram no mesmo ano.");
         }
-    }
-    
-    /**
-     * Menu interativo do sistema
-     */
-    public static void exibirMenu() {
-        System.out.println("\n🃏 === SUPER TRUNFO - MENU PRINCIPAL ===");
-        .
-    }
-    
-    /**
-     * Processa a opção escolhida pelo usuário
-     */
-    public static void processarOpcao(int opcao) {
-        switch (opcao) {
-            case 1:
-                exibirTodasCartas();
-                break;
-                
-            case 2:
-                System.out.println("\n➕ === INSERIR NOVA CARTA ===");
-                .
-                
-                Aluno novoAluno = new Aluno(matricula, nome, entrada);
-                inserirAluno(novoAluno);
-                break;
-                
-            case 3:
-                System.out.println("\n🔍 === BUSCAR CARTA ===");
-                System.out.print("Digite a matrícula: ");
-                String matriculaBusca = scanner.nextLine();
-                Aluno encontrado = buscarAluno(matriculaBusca);
-                
-                if (encontrado != null) {
-                    System.out.println("\n✅ Carta encontrada:");
-                    encontrado.exibirCarta();
-                } else {
-                    System.out.println("❌ Carta não encontrada!");
-                }
-                break;
-                
-            case 4:
-                System.out.println("\n❌ === REMOVER CARTA ===");
-                System.out.print("Digite a matrícula da carta a ser removida: ");
-                String matriculaRemover = scanner.nextLine();
-                excluirAluno(matriculaRemover);
-                break;
-                
-            case 5:
-                batalharCartas();
-                break;
-                
-            case 6:
-                inserirDadosExemplo();
-                break;
-                
-            case 0:
-                .
-                
-            default:
-                System.out.println("❌ Opção inválida! Tente novamente.");
-        }
-    }
-    
-    /**
-     * Método principal que executa o programa
-     */
-    public static void main(String[] args) {
-        System.out.println("🃏 ===================================");
-        System.out.println("   SUPER TRUNFO - CARTAS CLÁSSICAS");
-        System.out.println("   Módulo 1 - Novato (JDBC Puro)");
-        System.out.println("🃏 ===================================");
-        
-        // Inicializar banco de dados
-        criarTabela();
-        
-        int opcao;
-        do {
-            exibirMenu();
-            try {
-                opcao = Integer.parseInt(scanner.nextLine());
-                processarOpcao(opcao);
-            } catch (NumberFormatException e) {
-                .
-            }
-            
-            if (opcao != 0) {
-                .
-            }
-            
-        } while (opcao != 0);
-        
-        scanner.close();
     }
 }
-
