@@ -1,7 +1,7 @@
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-
+import java.util.List;
 
 public abstract class GenericDAO<E, K> {
     protected static EntityManagerFactory emf = Persistence.createEntityManagerFactory("SuperTrunfoPU");
@@ -15,7 +15,7 @@ public abstract class GenericDAO<E, K> {
         return emf.createEntityManager();
     }
 
-    public boolean inserir(E entidade) {
+    public boolean incluir(E entidade) {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
@@ -24,14 +24,13 @@ public abstract class GenericDAO<E, K> {
             return true;
         } catch (Exception e) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();
-            System.err.println("❌ Erro ao salvar: " + e.getMessage());
             return false;
         } finally {
             em.close();
         }
     }
 
-    public boolean remover(K chave) {
+    public boolean excluir(K chave) {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
@@ -50,22 +49,16 @@ public abstract class GenericDAO<E, K> {
         }
     }
 
-    public boolean alterar(E entidade) {
+    public E obter(K chave) {
         EntityManager em = getEntityManager();
         try {
-            em.getTransaction().begin();
-            em.merge(entidade);
-            em.getTransaction().commit();
-            return true;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) em.getTransaction().rollback();
-            return false;
+            return em.find(classeEntidade, chave);
         } finally {
             em.close();
         }
     }
 
-    public List<E> listarTodos() {
+    public List<E> obterTodos() {
         EntityManager em = getEntityManager();
         try {
             String jpql = "SELECT e FROM " + classeEntidade.getSimpleName() + " e";
@@ -75,16 +68,24 @@ public abstract class GenericDAO<E, K> {
         }
     }
 
-    public E obter(K chave) {
+    public boolean alterar(E entity) {
         EntityManager em = getEntityManager();
         try {
-            return em.find(classeEntidade, chave);
+            em.getTransaction().begin();
+            em.merge(entity);
+            em.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            return false;
         } finally {
             em.close();
         }
     }
     
     public static void fecharFabrica() {
-        if (emf != null && emf.isOpen()) emf.close();
+        if (emf != null && emf.isOpen()) {
+            emf.close();
+        }
     }
 }
