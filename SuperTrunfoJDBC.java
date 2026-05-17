@@ -42,14 +42,29 @@ public class SuperTrunfoJDBC {
                 continue;
             }
 
+            // Sintaxe clássica compatível com Java 11 e versões anteriores
             switch (opcao) {
-                case 1 -> interagirInsercao();
-                case 2 -> exibirTodasCartas();
-                case 3 -> interagirExclusao();
-                case 4 -> inserirDadosExemplo();
-                case 5 -> batalharCartas();
-                case 0 -> System.out.println("Saindo do jogo... Obrigado por jogar!");
-                default -> System.out.println("Opção inválida!");
+                case 1:
+                    interagirInsercao();
+                    break;
+                case 2:
+                    exibirTodasCartas();
+                    break;
+                case 3:
+                    interagirExclusao();
+                    break;
+                case 4:
+                    inserirDadosExemplo();
+                    break;
+                case 5:
+                    batalharCartas();
+                    break;
+                case 0:
+                    System.out.println("Saindo do jogo... Obrigado por jogar!");
+                    break;
+                default:
+                    System.out.println("Opção inválida!");
+                    break;
             }
         }
     }
