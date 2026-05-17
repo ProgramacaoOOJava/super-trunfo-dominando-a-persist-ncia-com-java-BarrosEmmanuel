@@ -1,7 +1,7 @@
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
-import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 
 public abstract class GenericDAO<E, K> {
     protected static EntityManagerFactory emf = Persistence.createEntityManagerFactory("SuperTrunfoPU");

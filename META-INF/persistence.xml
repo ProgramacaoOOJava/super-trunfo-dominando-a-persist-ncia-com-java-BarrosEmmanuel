@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence xmlns="https://jakarta.ee"
+<persistence xmlns="http://jcp.org"
              xmlns:xsi="http://w3.org"
-             xsi:schemaLocation="https://jakarta.ee https://jakarta.ee/persistence_3_0.xsd"
-             version="3.0">
+             xsi:schemaLocation="http://jcp.org http://jcp.org/persistence_2_1.xsd"
+             version="2.1">
     
     <persistence-unit name="SuperTrunfoPU" transaction-type="RESOURCE_LOCAL">
-        <provider>org.eclipse.link.jpa.PersistenceProvider</provider>
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>Aluno</class>
         <properties>
             <!-- Driver e URL do Banco Derby para o Nível Aventureiro -->
-            <property name="jakarta.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:derby:escolaJPA;create=true"/>
-            <property name="jakarta.persistence.jdbc.user" value=""/>
-            <property name="jakarta.persistence.jdbc.password" value=""/>
+            <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:derby:escolaJPA;create=true"/>
+            <property name="javax.persistence.jdbc.user" value=""/>
+            <property name="javax.persistence.jdbc.password" value=""/>
             
             <!-- Cria automaticamente a tabela do Aluno se ela não existir -->
-            <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+            <property name="javax.persistence.schema-generation.database.action" value="create"/>
             
             <!-- Desativa logs poluídos do EclipseLink no terminal -->
             <property name="eclipselink.logging.level" value="OFF"/>
