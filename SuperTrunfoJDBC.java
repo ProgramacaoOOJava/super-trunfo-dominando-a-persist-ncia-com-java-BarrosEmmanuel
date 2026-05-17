@@ -1,78 +1,276 @@
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 /**
- * Sistema Super Trunfo adaptado para JPA e GenericDAO
- * Nível 2 - Aventureiro: Desafio de Código
+ * Sistema Super Trunfo usando JDBC puro
+ * Nível 1 - Novato: Desafio de Código
  */
 public class SuperTrunfoJDBC {
-    private static final AlunoDAO dao = new AlunoDAO();
-    private static final Scanner scanner = new Scanner(System.in);
-    private static int pontuacao = 0;
-    private static final int META_PONTOS = 5;
-
+    
+    // Configurações de conexão com o banco Derby
+    private static final String URL = "jdbc:derby:escola;create=true";
+    private static final String USUARIO = "";
+    private static final String SENHA = "";
+    
+    private static Scanner scanner = new Scanner(System.in);
+    private static Random random = new Random();
+    
     public static void main(String[] args) {
+        carregarDriver();
+        criarTabela();
         int opcao = -1;
 
-        // Executa o menu fixo até escolher sair (6) ou alcançar 5 pontos operacionais válidos
-        while (opcao != 6 && pontuacao < META_PONTOS) {
-            exibirMenu();
+        while (opcao != 0) {
+            System.out.println("\n--- MENU SUPER TRUNFO ---");
+            System.out.println("1. Cadastrar Carta (Aluno)");
+            System.out.println("2. Listar Todas as Cartas");
+            System.out.println("3. Excluir uma Carta");
+            System.out.println("4. Inserir 5 Cartas de Exemplo");
+            System.out.println("5. Iniciar Batalha");
+            System.out.println("0. Sair");
+            System.out.print("Escolha uma opção: ");
+            
             if (scanner.hasNextInt()) {
                 opcao = scanner.nextInt();
-                scanner.nextLine(); // Limpa o buffer do scanner
+                scanner.nextLine(); // Limpa o buffer
             } else {
                 scanner.nextLine();
-                System.out.println("⚠️ Entrada inválida! Digite um número de 1 a 6.");
+                System.out.println("⚠️ Opção inválida!");
                 continue;
             }
 
-            if (opcao == 1) {
-                executarInserir();
-            } else if (opcao == 2) {
-                executarRemover();
-            } else if (opcao == 3) {
-                executarAlterar();
-            } else if (opcao == 4) {
-                executarListar();
-            } else if (opcao == 5) {
-                executarObter();
-            } else if (opcao == 6) {
-                System.out.println("👋 Saindo da jornada. Até a próxima!");
-            } else {
-                System.out.println("⚠️ Opção inválida! Escolha de 1 a 6.");
+            switch (opcao) {
+                case 1 -> interagirInsercao();
+                case 2 -> exibirTodasCartas();
+                case 3 -> interagirExclusao();
+                case 4 -> inserirDadosExemplo();
+                case 5 -> batalharCartas();
+                case 0 -> System.out.println("Saindo do jogo... Obrigado por jogar!");
+                default -> System.out.println("Opção inválida!");
             }
         }
-
-        if (pontuacao >= META_PONTOS) {
-            System.out.println("\n🌟 🔥 PARABÉNS! Você atingiu " + pontuacao + " pontos operacionais!");
-            System.out.println("🏆 Desafio Nível Aventureiro Concluído com Sucesso!");
+    }
+    
+    /**
+     * Força o carregamento do driver do Derby na memória para evitar o erro de 'No suitable driver'
+     */
+    private static void carregarDriver() {
+        try {
+            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("❌ Driver do Apache Derby não encontrado no sistema.");
+        }
+    }
+    
+    /**
+     * Obtém uma conexão com o banco de dados Derby
+     */
+    private static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USUARIO, SENHA);
+    }
+    
+    /**
+     * Cria a tabela aluno se ela não existir
+     */
+    public static void criarTabela() {
+        String sql = "CREATE TABLE aluno (matricula VARCHAR(20) PRIMARY KEY, nome VARCHAR(100), entrada INT)";
+        
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            
+            stmt.executeUpdate(sql);
+            System.out.println("⚙️ Tabela 'aluno' inicializada com sucesso.");
+            
+        } catch (SQLException e) {
+            if (e.getSQLState().equals("X0Y32")) {
+                // Tabela já existe, apenas prossegue silenciosamente
+            } else {
+                System.err.println("❌ Erro ao criar tabela: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Insere um aluno (carta) na base de dados usando PreparedStatement
+     */
+    public static boolean inserirAluno(Aluno aluno) {
+        String sql = "INSERT INTO aluno (matricula, nome, entrada) VALUES (?, ?, ?)";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, aluno.getMatricula());
+            ps.setString(2, aluno.getNome());
+            ps.setInt(3, aluno.getEntrada());
+            
+            int linhasAfetadas = ps.executeUpdate();
+            
+            if (linhasAfetadas > 0) {
+                System.out.println("✅ Carta inserida: " + aluno.getNome());
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ Erro ao inserir: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    /**
+     * Consulta todos os alunos usando Statement e ResultSet
+     */
+    public static List<Aluno> consultarTodosAlunos() {
+        List<Aluno> alunos = new ArrayList<>();
+        String sql = "SELECT * FROM aluno ORDER BY nome";
+        
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                Aluno aluno = new Aluno();
+                aluno.setMatricula(rs.getString("matricula"));
+                aluno.setNome(rs.getString("nome"));
+                aluno.setEntrada(rs.getInt("entrada"));
+                alunos.add(aluno);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ Erro ao consultar: " + e.getMessage());
+        }
+        return alunos;
+    }
+    
+    /**
+     * Exclui um aluno usando PreparedStatement
+     */
+    public static boolean excluirAluno(String matricula) {
+        String sql = "DELETE FROM aluno WHERE matricula = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, matricula);
+            int linhasAfetadas = ps.executeUpdate();
+            
+            if (linhasAfetadas > 0) {
+                System.out.println("✅ Carta com matrícula " + matricula + " foi removida.");
+                return true;
+            } else {
+                System.out.println("⚠️ Nenhuma carta encontrada com essa matrícula.");
+                return false;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ Erro ao excluir: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Busca um aluno específico por matrícula
+     */
+    public static Aluno buscarAluno(String matricula) {
+        String sql = "SELECT * FROM aluno WHERE matricula = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, matricula);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Aluno aluno = new Aluno();
+                    aluno.setMatricula(rs.getString("matricula"));
+                    aluno.setNome(rs.getString("nome"));
+                    aluno.setEntrada(rs.getInt("entrada"));
+                    return aluno;
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ Erro ao buscar: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Exibe todas as cartas formatadas
+     */
+    public static void exibirTodasCartas() {
+        List<Aluno> alunos = consultarTodosAlunos();
+        
+        if (alunos.isEmpty()) {
+            System.out.println("📭 Baralho vazio.");
+            return;
         }
         
-        GenericDAO.fecharFabrica();
+        System.out.println("\n=== SEU BARALHO ===");
+        for (Aluno aluno : alunos) {
+            aluno.exibirCarta();
+            System.out.println();
+        }
     }
-
-    private static void exibirMenu() {
-        System.out.println("\n⚔️ ====== MENU AVENTUREIRO (JPA) ======");
-        System.out.println("🎯 Pontuação Atual: [" + pontuacao + "/" + META_PONTOS + "]");
-        System.out.println("1. Inserir Carta (Cadastrar)");
-        System.out.println("2. Remover Carta (Excluir)");
-        System.out.println("3. Alterar Carta");
-        System.out.println("4. Listar Todas as Cartas");
-        System.out.println("5. Obter Carta por Matrícula");
-        System.out.println("6. Sair");
-        System.out.print("👉 Escolha uma opção: ");
+    
+    /**
+     * Insere dados de exemplo no sistema
+     */
+    public static void inserirDadosExemplo() {
+        Aluno[] exemplos = {
+            new Aluno("A2020001", "Ana Silva", 2020),
+            new Aluno("B2021002", "Bruno Dias", 2021),
+            new Aluno("M2018003", "Carlos Lima", 2018),
+            new Aluno("N2024004", "Nadia Souza", 2024),
+            new Aluno("R2025005", "Rafael Cruz", 2025)
+        };
+        
+        int inseridos = 0;
+        for (Aluno aluno : exemplos) {
+            if (buscarAluno(aluno.getMatricula()) == null) {
+                if (inserirAluno(aluno)) {
+                    inseridos++;
+                }
+            }
+        }
+        System.out.println("🎲 " + inseridos + " novas cartas de exemplo adicionadas.");
     }
-
-    private static void verificarSucesso(boolean sucesso, String mensagemOk) {
-        if (sucesso) {
-            pontuacao++;
-            System.out.println("✅ " + mensagemOk + " (+1 Ponto!)");
+    
+    /**
+     * Implementa a lógica de batalha entre duas cartas
+     */
+    public static void batalharCartas() {
+        List<Aluno> alunos = consultarTodosAlunos();
+        
+        if (alunos.size() < 2) {
+            System.out.println("⚠️ Cadastre pelo menos 2 cartas para poder batalhar!");
+            return;
+        }
+        
+        Aluno carta1 = alunos.get(random.nextInt(alunos.size()));
+        Aluno carta2;
+        do {
+            carta2 = alunos.get(random.nextInt(alunos.size()));
+        } while (carta1.getMatricula().equals(carta2.getMatricula()));
+        
+        System.out.println("\n--- JOGADOR 1 ---");
+        carta1.exibirCarta();
+        System.out.println("\n       VS        \n");
+        System.out.println("--- JOGADOR 2 ---");
+        carta2.exibirCarta();
+        
+        System.out.println("\nResultado da Batalha (Maior ano vence):");
+        if (carta1.batalhar(carta2)) {
+            System.out.println("🏆 VENCEDOR: Jogador 1 (" + carta1.getNome() + ")");
+        } else if (carta2.batalhar(carta1)) {
+            System.out.println("🏆 VENCEDOR: Jogador 2 (" + carta2.getNome() + ")");
         } else {
-            System.out.println("❌ Operação falhou.");
+            System.out.println("🤝 EMPATE! Ambos entraram no mesmo ano.");
         }
     }
 
-    private static void executarInserir() {
+    private static void interagirInsercao() {
         System.out.print("Matrícula: ");
         String mat = scanner.nextLine();
         System.out.print("Nome: ");
@@ -80,60 +278,12 @@ public class SuperTrunfoJDBC {
         System.out.print("Ano de Entrada: ");
         int ent = scanner.nextInt();
         scanner.nextLine();
-        
-        boolean ok = dao.inserir(new Aluno(mat, nome, ent));
-        verificarSucesso(ok, "Carta salva com sucesso via JPA!");
+        inserirAluno(new Aluno(mat, nome, ent));
     }
 
-    private static void executarRemover() {
-        System.out.print("Digite a matrícula para remover: ");
+    private static void interagirExclusao() {
+        System.out.print("Digite a matrícula para excluir: ");
         String mat = scanner.nextLine();
-        boolean ok = dao.remover(mat);
-        verificarSucesso(ok, "Carta deletada com sucesso!");
-    }
-
-    private static void executarAlterar() {
-        System.out.print("Matrícula da carta que deseja alterar: ");
-        String mat = scanner.nextLine();
-        Aluno existente = dao.obter(mat);
-        
-        if (existente == null) {
-            System.out.println("⚠️ Carta não encontrada!");
-            return;
-        }
-        
-        System.out.print("Novo Nome (Atual: " + existente.getNome() + "): ");
-        String nome = scanner.nextLine();
-        System.out.print("Novo Ano Entrada (Atual: " + existente.getEntrada() + "): ");
-        int ent = scanner.nextInt();
-        scanner.nextLine();
-        
-        boolean ok = dao.alterar(new Aluno(mat, nome, ent));
-        verificarSucesso(ok, "Dados atualizados com sucesso!");
-    }
-
-    private static void executarListar() {
-        List<Aluno> lista = dao.listarTodos();
-        if (lista.isEmpty()) {
-            System.out.println("📭 Nenhum aluno no registro.");
-            return;
-        }
-        System.out.println("\n📋 === LISTAGEM COMPLETA ===");
-        for (Aluno a : lista) {
-            a.exibirCarta();
-        }
-        verificarSucesso(true, "Listagem gerada com sucesso!");
-    }
-
-    private static void executarObter() {
-        System.out.print("Digite a matrícula: ");
-        String mat = scanner.nextLine();
-        Aluno a = dao.obter(mat);
-        if (a != null) {
-            a.exibirCarta();
-            verificarSucesso(true, "Busca realizada!");
-        } else {
-            System.out.println("⚠️ Nenhuma carta encontrada com a matrícula " + mat);
-        }
+        excluirAluno(mat);
     }
 }

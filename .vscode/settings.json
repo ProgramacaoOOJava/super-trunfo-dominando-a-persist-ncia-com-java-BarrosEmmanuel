@@ -1,5 +1,6 @@
 {
     "java.project.referencedLibraries": [
-        "*.jar"
+        "derby.jar",
+        "eclipselink.jar"
     ]
 }
