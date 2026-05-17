@@ -1,159 +1,163 @@
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 public class SuperTrunfoJDBC {
-    private static final AlunoDAO dao = new AlunoDAO();
-    private static final Scanner scanner = new Scanner(System.in);
-    private static int pontuacao = 0;
-    private static final int META_PONTOS = 5;
-
+    // Lista simples em memória para simular o banco e rodar sem travar no Codespace
+    private static List<Aluno> bancoEmMemoria = new ArrayList<>();
+    private static Scanner scanner = new Scanner(System.in);
+    private static Random random = new Random();
+    
     public static void main(String[] args) {
+        System.out.println("⚙️ Sistema inicializado com sucesso em memória.");
         int opcao = -1;
 
-        // Mantem o laco enquanto nao escolher sair (6) e nao atingir 5 pontos de sucesso
-        while (opcao != 6 && pontuacao < META_PONTOS) {
-            exibirMenu();
+        while (opcao != 0) {
+            System.out.println("\n--- MENU SUPER TRUNFO ---");
+            System.out.println("1. Cadastrar Carta (Aluno)");
+            System.out.println("2. Listar Todas as Cartas");
+            System.out.println("3. Excluir uma Carta");
+            System.out.println("4. Inserir 5 Cartas de Exemplo");
+            System.out.println("5. Iniciar Batalha");
+            System.out.println("0. Sair");
+            System.out.print("Escolha uma opção: ");
+            
             if (scanner.hasNextInt()) {
                 opcao = scanner.nextInt();
-                scanner.nextLine(); // Limpa buffer
+                scanner.nextLine();
             } else {
                 scanner.nextLine();
-                System.out.println("⚠️ Entrada inválida! Digite um número de 1 a 6.");
+                System.out.println("⚠️ Opção inválida!");
                 continue;
             }
 
-            // Sintaxe de switch classica para total compatibilidade com Java 11
             switch (opcao) {
                 case 1:
-                    executarInserir();
+                    interagirInsercao();
                     break;
                 case 2:
-                    executarRemover();
+                    exibirTodasCartas();
                     break;
                 case 3:
-                    executarAlterar();
+                    interagirExclusao();
                     break;
                 case 4:
-                    executarListar();
+                    inserirDadosExemplo();
                     break;
                 case 5:
-                    executarObter();
+                    batalharCartas();
                     break;
-                case 6:
-                    System.out.println("👋 Saindo do jogo de forma voluntária. Até logo!");
+                case 0:
+                    System.out.println("Saindo do jogo... Obrigado por jogar!");
                     break;
                 default:
-                    System.out.println("⚠️ Opção inválida! Escolha de 1 a 6.");
+                    System.out.println("Opção inválida!");
                     break;
             }
         }
-
-        // Regra de Ouro: Se atingiu os 5 pontos, mostra o resultado final e o baralho restante
-        if (pontuacao >= META_PONTOS) {
-            System.out.println("\n🌟 🔥 FIM DE JOGO! Você atingiu a meta de " + META_PONTOS + " operações válidas!");
-            System.out.println("🎯 Pontuação Final do Jogador: " + pontuacao + " pontos.");
-            
-            System.out.println("\n📋 === BARALHO FINAL (ALUNOS RESTANTES NA BASE) ===");
-            List<Aluno> listaRestante = dao.obterTodos();
-            if (listaRestante.isEmpty()) {
-                System.out.println("📭 O baralho terminou completamente vazio.");
-            } else {
-                for (Aluno a : listaRestante) {
-                    a.exibirCarta();
-                }
+    }
+    
+    public static boolean inserirAluno(Aluno aluno) {
+        bancoEmMemoria.add(aluno);
+        System.out.println("✅ Carta inserida: " + aluno.getNome());
+        return true;
+    }
+    
+    public static List<Aluno> consultarTodosAlunos() {
+        return bancoEmMemoria;
+    }
+    
+    public static boolean excluirAluno(String matricula) {
+        for (int i = 0; i < bancoEmMemoria.size(); i++) {
+            if (bancoEmMemoria.get(i).getMatricula().equalsIgnoreCase(matricula)) {
+                System.out.println("✅ Carta com matrícula " + matricula + " foi removida.");
+                bancoEmMemoria.remove(i);
+                return true;
             }
-            System.out.println("\n🏆 Desafio Nível Aventureiro Concluído com Sucesso e Humildade!");
         }
-        
-        // Fecha os recursos corretamente conforme os requisitos nao funcionais
-        AlunoDAO.fecharFabrica();
+        System.out.println("⚠️ Nenhuma carta encontrada com essa matrícula.");
+        return false;
     }
-
-    private static void exibirMenu() {
-        System.out.println("\n⚔️ ====== MENU AVENTUREIRO (JPA) ======");
-        System.out.println("🎯 Pontuação Atual: [" + pontuacao + "/" + META_PONTOS + "]");
-        System.out.println("1. Inserir aluno");
-        System.out.println("2. Remover aluno");
-        System.out.println("3. Alterar dados de aluno");
-        System.out.println("4. Listar todos os alunos");
-        System.out.println("5. Obter aluno por matrícula");
-        System.out.println("6. Sair do jogo");
-        System.out.print("👉 Escolha uma opção: ");
-    }
-
-    private static void verificarSucesso(boolean sucesso, String mensagemOk) {
-        if (sucesso) {
-            pontuacao++;
-            System.out.println("✅ " + mensagemOk + " (+1 Ponto Operacional!)");
-        } else {
-            System.out.println("❌ A operação falhou ou não encontrou o registro.");
+    
+    public static Aluno buscarAluno(String matricula) {
+        for (Aluno a : bancoEmMemoria) {
+            if (a.getMatricula().equalsIgnoreCase(matricula)) return a;
         }
+        return null;
     }
-
-    private static void executarInserir() {
-        System.out.print("Matrícula (Chave Primária): ");
-        String mat = scanner.nextLine();
-        System.out.print("Nome do Aluno: ");
-        String nome = scanner.nextLine();
-        System.out.print("Ano: ");
-        int ano = scanner.nextInt();
-        scanner.nextLine();
-        
-        boolean ok = dao.incluir(new Aluno(mat, nome, ano));
-        verificarSucesso(ok, "Aluno inserido com sucesso via JPA!");
-    }
-
-    private static void executarRemover() {
-        System.out.print("Digite a matrícula do aluno para remover: ");
-        String mat = scanner.nextLine();
-        
-        boolean ok = dao.excluir(mat);
-        verificarSucesso(ok, "Aluno removido da base de dados!");
-    }
-
-    private static void executarAlterar() {
-        System.out.print("Digite a matrícula do aluno que deseja alterar: ");
-        String mat = scanner.nextLine();
-        Aluno existente = dao.obter(mat);
-        
-        if (existente == null) {
-            System.out.println("⚠️ Aluno não encontrado!");
+    
+    public static void exibirTodasCartas() {
+        if (bancoEmMemoria.isEmpty()) {
+            System.out.println("📭 Baralho vazio.");
             return;
         }
-        
-        System.out.print("Novo Nome (Atual: " + existente.getNome() + "): ");
-        String nome = scanner.nextLine();
-        System.out.print("Novo Ano (Atual: " + existente.getAno() + "): ");
-        int ano = scanner.nextInt();
-        scanner.nextLine();
-        
-        boolean ok = dao.alterar(new Aluno(mat, nome, ano));
-        verificarSucesso(ok, "Dados do aluno alterados com sucesso!");
+        System.out.println("\n=== SEU BARALHO ===");
+        for (Aluno aluno : bancoEmMemoria) {
+            aluno.exibirCarta();
+            System.out.println();
+        }
     }
-
-    private static void executarListar() {
-        System.out.println("\n📋 === LISTANDO TODOS OS ALUNOS ===");
-        List<Aluno> lista = dao.obterTodos();
-        if (lista.isEmpty()) {
-            System.out.println("📭 Nenhum aluno cadastrado no momento.");
-        } else {
-            for (Aluno a : lista) {
-                a.exibirCarta();
+    
+    public static void inserirDadosExemplo() {
+        String[][] dados = {
+            {"A2020001", "Ana Silva", "2020"},
+            {"B2021002", "Bruno Dias", "2021"},
+            {"M2018003", "Carlos Lima", "2018"},
+            {"N2024004", "Nadia Souza", "2024"},
+            {"R2025005", "Rafael Cruz", "2025"}
+        };
+        int count = 0;
+        for (String[] d : dados) {
+            if (buscarAluno(d[0]) == null) {
+                inserirAluno(new Aluno(d[0], d[1], Integer.parseInt(d[2])));
+                count++;
             }
         }
-        // Operacao de listagem bem sucedida acumula ponto conforme regra do jogo
-        verificarSucesso(true, "Listagem gerada!");
+        System.out.println("🎲 " + count + " novas cartas de exemplo adicionadas.");
+    }
+    
+    public static void batalharCartas() {
+        if (bancoEmMemoria.size() < 2) {
+            System.out.println("⚠️ Cadastre pelo menos 2 cartas para poder batalhar!");
+            return;
+        }
+        Aluno c1 = bancoEmMemoria.get(random.nextInt(bancoEmMemoria.size()));
+        Aluno c2;
+        do {
+            c2 = bancoEmMemoria.get(random.nextInt(bancoEmMemoria.size()));
+        } while (c1.getMatricula().equals(c2.getMatricula()));
+        
+        System.out.println("\n--- JOGADOR 1 ---");
+        c1.exibirCarta();
+        System.out.println("\n       VS        \n");
+        System.out.println("--- JOGADOR 2 ---");
+        c2.exibirCarta();
+        
+        System.out.println("\nResultado da Batalha:");
+        if (c1.batalhar(c2)) {
+            System.out.println("🏆 VENCEDOR: Jogador 1 (" + c1.getNome() + ")");
+        } else if (c2.batalhar(c1)) {
+            System.out.println("🏆 VENCEDOR: Jogador 2 (" + c2.getNome() + ")");
+        } else {
+            System.out.println("🤝 EMPATE!");
+        }
     }
 
-    private static void executarObter() {
-        System.out.print("Digite a matrícula buscada: ");
+    private static void interagirInsercao() {
+        System.out.print("Matrícula: ");
         String mat = scanner.nextLine();
-        Aluno a = dao.obter(mat);
-        if (a != null) {
-            a.exibirCarta();
-            verificarSucesso(true, "Aluno localizado com sucesso!");
-        } else {
-            System.out.println("⚠️ Nenhum aluno encontrado com a matrícula: " + mat);
-        }
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine();
+        System.out.print("Ano de Entrada: ");
+        int ent = scanner.nextInt();
+        scanner.nextLine();
+        inserirAluno(new Aluno(mat, nome, ent));
+    }
+
+    private static void interagirExclusao() {
+        System.out.print("Matrícula para excluir: ");
+        String mat = scanner.nextLine();
+        excluirAluno(mat);
     }
 }
