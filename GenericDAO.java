@@ -75,7 +75,7 @@ public abstract class GenericDAO<E, K> {
         }
     }
 
-    public E obter(K chave) {
+    public E obtener(K chave) {
         EntityManager em = getEntityManager();
         try {
             return em.find(classeEntidade, chave);
