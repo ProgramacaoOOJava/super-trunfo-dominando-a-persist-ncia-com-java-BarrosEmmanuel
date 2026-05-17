@@ -1,66 +1,48 @@
-/**
- * Classe que representa um aluno no sistema Super Trunfo
- * Nível 1 - Novato: Desafio de Código
- */
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Column;
+
+@Entity
 public class Aluno {
-    private String matricula;
-    private String nome;
-    private int entrada;
     
-    // Construtor padrão
+    @Id
+    private String matricula;
+    
+    @Column(length = 100)
+    private String nome;
+    
+    private int ano;
+    
+    // Construtor padrao obrigatorio para o JPA
     public Aluno() {
     }
     
-    // Construtor com parâmetros
-    public Aluno(String matricula, String nome, int entrada) {
+    // Construtor com parametros
+    public Aluno(String matricula, String nome, int ano) {
         this.matricula = matricula;
         this.nome = nome;
-        this.entrada = entrada;
+        this.ano = ano;
     }
     
     // Getters e Setters
-    public String getMatricula() {
-        return this.matricula;
-    }
+    public String getMatricula() { return matricula; }
+    public void setMatricula(String matricula) { this.matricula = matricula; }
     
-    public void setMatricula(String matricula) {
-        this.matricula = matricula;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
     
-    public String getNome() {
-        return this.nome;
-    }
+    public int getAno() { return ano; }
+    public void setAno(int ano) { this.ano = ano; }
     
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-    
-    public int getEntrada() {
-        return this.entrada;
-    }
-    
-    public void setEntrada(int entrada) {
-        this.entrada = entrada;
-    }
-    
-    /**
-     * Calculates the power of the card based on entry year
-     */
+    // Regra de negocio: Forca baseada no ano
     public int getForca() {
-        return this.entrada;
+        return this.ano;
     }
     
-    /**
-     * Determines card rarity based on the first letter of the enrollment
-     * A-M = Common, N-Z = Rare
-     */
+    // Regra de negocio: Raridade baseada na primeira letra da matricula
     public String getRaridade() {
-        if (matricula == null || matricula.isEmpty()) {
-            return "Comum";
-        }
-        
+        if (matricula == null || matricula.isEmpty()) return "Comum";
         char primeiraLetra = Character.toUpperCase(matricula.charAt(0));
-        
         if (primeiraLetra >= 'A' && primeiraLetra <= 'M') {
             return "Comum";
         } else {
@@ -68,28 +50,19 @@ public class Aluno {
         }
     }
     
-    /**
-     * Displays the card formatted in Super Trunfo style
-     */
+    // Interface rica e feedback visual em console
     public void exibirCarta() {
-        System.out.println("================================");
-        System.out.println("     SUPER TRUNFO - ALUNOS     ");
-        System.out.println("================================");
-        System.out.println("Matrícula: " + this.matricula);
-        System.out.println("Nome     : " + this.nome);
-        System.out.println("Entrada  : " + this.entrada);
-        System.out.println("Força    : " + getForca());
-        System.out.println("Raridade : " + getRaridade());
-        System.out.println("================================");
+        System.out.println("🃏 .----------------------------.");
+        System.out.printf("   | %-26s |\n", "SUPER TRUNFO - JPA");
+        System.out.println("   |----------------------------|");
+        System.out.printf("   | 🆔 Matrícula : %-12s |\n", matricula);
+        System.out.printf("   | 👤 Nome      : %-12s |\n", nome.length() > 12 ? nome.substring(0, 9) + "..." : nome);
+        System.out.printf("   | 📅 Ano        : %-12d |\n", ano);
+        System.out.printf("   | 💪 Força     : %-12d |\n", getForca());
+        System.out.printf("   | ⭐ Raridade  : %-12s |\n", getRaridade());
+        System.out.println("   '----------------------------'");
     }
-    
-    /**
-     * Compares two cards in a battle
-     */
-    public boolean batalhar(Aluno oponente) {
-        return this.entrada > oponente.entrada;
-    }
-    
+
     @Override
     public String toString() {
         return "Aluno: " + nome + " (" + matricula + ")";
