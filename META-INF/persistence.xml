@@ -8,16 +8,14 @@
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>Aluno</class>
         <properties>
-            <!-- Driver e URL do Banco Derby para o Nível Aventureiro -->
+            <!-- Conexao Apache Derby -->
             <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:derby:escolaJPA;create=true"/>
             <property name="javax.persistence.jdbc.user" value=""/>
             <property name="javax.persistence.jdbc.password" value=""/>
             
-            <!-- Cria automaticamente a tabela do Aluno se ela não existir -->
+            <!-- Criacao automatica da tabela -->
             <property name="javax.persistence.schema-generation.database.action" value="create"/>
-            
-            <!-- Desativa logs poluídos do EclipseLink no terminal -->
             <property name="eclipselink.logging.level" value="OFF"/>
         </properties>
     </persistence-unit>
