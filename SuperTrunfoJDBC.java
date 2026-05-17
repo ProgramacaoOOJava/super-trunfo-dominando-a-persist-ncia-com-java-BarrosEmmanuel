@@ -17,8 +17,14 @@ public class SuperTrunfoJDBC {
         // Executa o menu fixo até escolher sair (6) ou alcançar 5 pontos operacionais válidos
         while (opcao != 6 && pontuacao < META_PONTOS) {
             exibirMenu();
-            opcao = scanner.nextInt();
-            scanner.nextLine(); // Limpa o buffer do scanner
+            if (scanner.hasNextInt()) {
+                opcao = scanner.nextInt();
+                scanner.nextLine(); // Limpa o buffer do scanner
+            } else {
+                scanner.nextLine();
+                System.out.println("⚠️ Entrada inválida! Digite um número de 1 a 6.");
+                continue;
+            }
 
             if (opcao == 1) {
                 executarInserir();
@@ -48,8 +54,8 @@ public class SuperTrunfoJDBC {
     private static void exibirMenu() {
         System.out.println("\n⚔️ ====== MENU AVENTUREIRO (JPA) ======");
         System.out.println("🎯 Pontuação Atual: [" + pontuacao + "/" + META_PONTOS + "]");
-        System.out.println("1. Inserir Carta");
-        System.out.println("2. Remover Carta");
+        System.out.println("1. Inserir Carta (Cadastrar)");
+        System.out.println("2. Remover Carta (Excluir)");
         System.out.println("3. Alterar Carta");
         System.out.println("4. Listar Todas as Cartas");
         System.out.println("5. Obter Carta por Matrícula");
@@ -73,6 +79,7 @@ public class SuperTrunfoJDBC {
         String nome = scanner.nextLine();
         System.out.print("Ano de Entrada: ");
         int ent = scanner.nextInt();
+        scanner.nextLine();
         
         boolean ok = dao.inserir(new Aluno(mat, nome, ent));
         verificarSucesso(ok, "Carta salva com sucesso via JPA!");
@@ -99,9 +106,10 @@ public class SuperTrunfoJDBC {
         String nome = scanner.nextLine();
         System.out.print("Novo Ano Entrada (Atual: " + existente.getEntrada() + "): ");
         int ent = scanner.nextInt();
+        scanner.nextLine();
         
         boolean ok = dao.alterar(new Aluno(mat, nome, ent));
-        verificarSucesso(ok, "Dados updated com sucesso!");
+        verificarSucesso(ok, "Dados atualizados com sucesso!");
     }
 
     private static void executarListar() {
