@@ -66,7 +66,7 @@ public class SuperTrunfoJDBC {
         }
     }
 
-    private static void ejecutarInserir() {
+    private static void executarInserir() {
         System.out.print("Matrícula: ");
         String mat = scanner.nextLine();
         System.out.print("Nome: ");
@@ -101,7 +101,7 @@ public class SuperTrunfoJDBC {
         int ent = scanner.nextInt();
         
         boolean ok = dao.alterar(new Aluno(mat, nome, ent));
-        verificarSucesso(ok, "Dados atualizados com sucesso!");
+        verificarSucesso(ok, "Dados updated com sucesso!");
     }
 
     private static void executarListar() {
