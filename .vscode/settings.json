@@ -1,6 +1,17 @@
 {
+    "java.configuration.updateBuildConfiguration": "automatic",
     "java.project.referencedLibraries": [
+        "lib/**/*.jar",
         "derby.jar",
         "eclipselink.jar"
-    ]
+    ],
+    "java.project.sourcePaths": [
+        "src"
+    ],
+    "java.project.outputPath": "bin",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/supertrunfo_db": true
+    }
 }
