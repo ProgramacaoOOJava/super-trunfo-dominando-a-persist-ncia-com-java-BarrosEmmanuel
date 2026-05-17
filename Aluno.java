@@ -13,44 +13,76 @@ public class Aluno {
     
     private int entrada;
     
+    // Construtor padrão obrigatório para o JPA
     public Aluno() {
     }
     
+    // Construtor com parâmetros preenchido de forma limpa
     public Aluno(String matricula, String nome, int entrada) {
         this.matricula = matricula;
         this.nome = nome;
         this.entrada = entrada;
     }
     
-    // Getters e Setters
-    public String getMatricula() { return matricula; }
-    public void setMatricula(String matricula) { this.matricula = matricula; }
+    // Getters e Setters sem nenhuma marcação oculta
+    public String getMatricula() {
+        return this.matricula;
+    }
     
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
+    }
     
-    public int getEntrada() { return entrada; }
-    public void setEntrada(int entrada) { this.entrada = entrada; }
+    public String getNome() {
+        return this.nome;
+    }
+    
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+    
+    public int getEntrada() {
+        return this.entrada;
+    }
+    
+    public void setEntrada(int entrada) {
+        this.entrada = entrada;
+    }
     
     public int getForca() {
         return this.entrada;
     }
     
     public String getRaridade() {
-        if (matricula == null || matricula.isEmpty()) return "Comum";
+        if (matricula == null || matricula.isEmpty()) {
+            return "Comum";
+        }
         char primeiraLetra = Character.toUpperCase(matricula.charAt(0));
-        return (primeiraLetra >= 'A' && primeiraLetra <= 'M') ? "Comum" : "Rara";
+        if (primeiraLetra >= 'A' && primeiraLetra <= 'M') {
+            return "Comum";
+        } else {
+            return "Rara";
+        }
     }
     
     public void exibirCarta() {
-        System.out.println("🃏 .----------------------------.");
-        System.out.printf("   | %-26s |\n", "SUPER TRUNFO - JPA");
-        System.out.println("   |----------------------------|");
-        System.out.printf("   | 🆔 Matrícula : %-12s |\n", matricula);
-        System.out.printf("   | 👤 Nome      : %-12s |\n", nome.length() > 12 ? nome.substring(0, 9) + "..." : nome);
-        System.out.printf("   | 📅 Entrada   : %-12d |\n", entrada);
-        System.out.printf("   | 💪 Força     : %-12d |\n", getForca());
-        System.out.printf("   | ⭐ Raridade  : %-12s |\n", getRaridade());
-        System.out.println("   '----------------------------'");
+        System.out.println("🃏 ================================");
+        System.out.println("     SUPER TRUNFO - ALUNOS (JPA)   ");
+        System.out.println("==================================");
+        System.out.println("🆔 Matrícula: " + this.matricula);
+        System.out.println("👤 Nome     : " + this.nome);
+        System.out.println("📅 Entrada  : " + this.entrada);
+        System.out.println("💪 Força    : " + getForca());
+        System.out.println("⭐ Raridade : " + getRaridade());
+        System.out.println("==================================");
+    }
+    
+    public boolean batalhar(Aluno oponente) {
+        return this.entrada > oponente.entrada;
+    }
+    
+    @Override
+    public String toString() {
+        return "Aluno: " + nome + " (" + matricula + ")";
     }
 }
