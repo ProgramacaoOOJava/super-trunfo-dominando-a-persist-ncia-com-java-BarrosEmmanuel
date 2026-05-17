@@ -1,7 +1,11 @@
 import java.util.List;
 import java.util.Scanner;
 
-public class SuperTrunfoJPA {
+/**
+ * Sistema Super Trunfo adaptado para JPA e GenericDAO
+ * Nível 2 - Aventureiro: Desafio de Código
+ */
+public class SuperTrunfoJDBC {
     private static final AlunoDAO dao = new AlunoDAO();
     private static final Scanner scanner = new Scanner(System.in);
     private static int pontuacao = 0;
@@ -10,19 +14,26 @@ public class SuperTrunfoJPA {
     public static void main(String[] args) {
         int opcao = -1;
 
+        // Executa o menu fixo até escolher sair (6) ou alcançar 5 pontos operacionais válidos
         while (opcao != 6 && pontuacao < META_PONTOS) {
             exibirMenu();
             opcao = scanner.nextInt();
-            scanner.nextLine(); // Limpa buffer
+            scanner.nextLine(); // Limpa o buffer do scanner
 
-            switch (opcao) {
-                case 1 -> executarInserir();
-                case 2 -> executarRemover();
-                case 3 -> executarAlterar();
-                case 4 -> executarListar();
-                case 5 -> executarObter();
-                case 6 -> System.out.println("👋 Saindo da jornada. Até a próxima!");
-                default -> System.out.println("⚠️ Opção inválida! Escolha de 1 a 6.");
+            if (opcao == 1) {
+                executarInserir();
+            } else if (opcao == 2) {
+                executarRemover();
+            } else if (opcao == 3) {
+                executarAlterar();
+            } else if (opcao == 4) {
+                executarListar();
+            } else if (opcao == 5) {
+                executarObter();
+            } else if (opcao == 6) {
+                System.out.println("👋 Saindo da jornada. Até a próxima!");
+            } else {
+                System.out.println("⚠️ Opção inválida! Escolha de 1 a 6.");
             }
         }
 
@@ -31,7 +42,7 @@ public class SuperTrunfoJPA {
             System.out.println("🏆 Desafio Nível Aventureiro Concluído com Sucesso!");
         }
         
-        AlunoDAO.fecharFabrica();
+        GenericDAO.fecharFabrica();
     }
 
     private static void exibirMenu() {
@@ -51,11 +62,11 @@ public class SuperTrunfoJPA {
             pontuacao++;
             System.out.println("✅ " + mensagemOk + " (+1 Ponto!)");
         } else {
-            System.out.println("❌ Operação falhou ou não gerou alterações.");
+            System.out.println("❌ Operação falhou.");
         }
     }
 
-    private static void executarInserir() {
+    private static void ejecutarInserir() {
         System.out.print("Matrícula: ");
         String mat = scanner.nextLine();
         System.out.print("Nome: ");
@@ -71,7 +82,7 @@ public class SuperTrunfoJPA {
         System.out.print("Digite a matrícula para remover: ");
         String mat = scanner.nextLine();
         boolean ok = dao.remover(mat);
-        verificarSucesso(ok, "Carta deletada do banco!");
+        verificarSucesso(ok, "Carta deletada com sucesso!");
     }
 
     private static void executarAlterar() {
@@ -103,7 +114,6 @@ public class SuperTrunfoJPA {
         for (Aluno a : lista) {
             a.exibirCarta();
         }
-        // Operação de leitura bem sucedida conta ponto conforme regra
         verificarSucesso(true, "Listagem gerada com sucesso!");
     }
 
