@@ -1,31 +1,24 @@
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Column;
-
-
-@Entity
+/**
+ * Classe que representa um aluno no sistema Super Trunfo
+ * Nível 1 - Novato: Desafio de Código
+ */
 public class Aluno {
-    
-    @Id
     private String matricula;
-    
-    @Column(length = 100)
     private String nome;
-    
     private int entrada;
     
-    // Construtor padrão obrigatório para o JPA
+    // Construtor padrão
     public Aluno() {
     }
     
-    // Construtor com parâmetros preenchido de forma limpa
+    // Construtor com parâmetros
     public Aluno(String matricula, String nome, int entrada) {
         this.matricula = matricula;
         this.nome = nome;
         this.entrada = entrada;
     }
     
-    // Getters e Setters sem nenhuma marcação oculta
+    // Getters e Setters
     public String getMatricula() {
         return this.matricula;
     }
@@ -50,15 +43,24 @@ public class Aluno {
         this.entrada = entrada;
     }
     
+    /**
+     * Calculates the power of the card based on entry year
+     */
     public int getForca() {
         return this.entrada;
     }
     
+    /**
+     * Determines card rarity based on the first letter of the enrollment
+     * A-M = Common, N-Z = Rare
+     */
     public String getRaridade() {
         if (matricula == null || matricula.isEmpty()) {
             return "Comum";
         }
+        
         char primeiraLetra = Character.toUpperCase(matricula.charAt(0));
+        
         if (primeiraLetra >= 'A' && primeiraLetra <= 'M') {
             return "Comum";
         } else {
@@ -66,18 +68,24 @@ public class Aluno {
         }
     }
     
+    /**
+     * Displays the card formatted in Super Trunfo style
+     */
     public void exibirCarta() {
-        System.out.println("🃏 ================================");
-        System.out.println("     SUPER TRUNFO - ALUNOS (JPA)   ");
-        System.out.println("==================================");
-        System.out.println("🆔 Matrícula: " + this.matricula);
-        System.out.println("👤 Nome     : " + this.nome);
-        System.out.println("📅 Entrada  : " + this.entrada);
-        System.out.println("💪 Força    : " + getForca());
-        System.out.println("⭐ Raridade : " + getRaridade());
-        System.out.println("==================================");
+        System.out.println("================================");
+        System.out.println("     SUPER TRUNFO - ALUNOS     ");
+        System.out.println("================================");
+        System.out.println("Matrícula: " + this.matricula);
+        System.out.println("Nome     : " + this.nome);
+        System.out.println("Entrada  : " + this.entrada);
+        System.out.println("Força    : " + getForca());
+        System.out.println("Raridade : " + getRaridade());
+        System.out.println("================================");
     }
     
+    /**
+     * Compares two cards in a battle
+     */
     public boolean batalhar(Aluno oponente) {
         return this.entrada > oponente.entrada;
     }
